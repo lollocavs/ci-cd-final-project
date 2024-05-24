@@ -35,4 +35,30 @@ spec:
           find "$WORKSPACE_CI_SOURCE_PATH" -type d -name "..?" -exec rm -rf {} \;
         fi
 
-
+---
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: nose
+spec:
+  description: This task run test
+  workspaces:
+    - name: ci_source
+  params:
+    - name: args
+      description: arguments to pass to nose
+      type: string
+      default: "-v"
+  steps:
+    - name: nosetests
+      image: python:3.9-slim
+      workingDir: $(workspaces.ci_source.path)
+      script: |
+        #! /bin/bash
+        set -e
+        python -m pip install --upgrade pip wheel
+        pip install -r requirements.txt
+        nosetests $(params.args)
+        
+      
