@@ -1,0 +1,34 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cleanup
+spec:
+  description: This task will cleanup a workspace by deleting all files.
+  workspaces:
+    - name: ci_source
+  steps:
+    - name: remove
+      image: alpine:3
+      env:
+        - name: WORKSPACE_CI_SOURCE_PATH
+          value: $(workspaces.ci_source.path)
+      workingDir: $(workspaces.ci_source.path)
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+      script: |
+        #! /usr/bin/env sh
+        set -eu
+        echo "Removing all files from ${WORKSPACE_CI_SOURCE_PATH}
+        # Delete any existing contents of the directory if it exists
+        if [-d "${WORKSPACE_CI_SOURCE_PATH}"] ; then
+          # Delete non-hidden files and directories
+          rm -rf "${WORKSPACE_CI_SOURCE_PATH}"/*
+          # Delete files and directories with . but
+          rm -rf "${WORKSPACE_CI_SOURCE_PATH}"/.[!.]*
+          # Delete files and directories starting with .. plus any other character
+          find "$WORKSPACE_CI_SOURCE_PATH" -type f -name "..?" -exec rm -f {} \;
+          find "$WORKSPACE_CI_SOURCE_PATH" -type d -name "..?" -exec rm -rf {} \;
+        fi
+
