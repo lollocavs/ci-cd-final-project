@@ -18,17 +18,21 @@ spec:
         runAsNonRoot: false
         runAsUser: 0
       script: |
-        #! /usr/bin/env sh
+        #!/usr/bin/env sh
         set -eu
-        echo "Removing all files from ${WORKSPACE_CI_SOURCE_PATH}
+        echo "Removing all files from ${WORKSPACE_CI_SOURCE_PATH}"
+
         # Delete any existing contents of the directory if it exists
-        if [-d "${WORKSPACE_CI_SOURCE_PATH}"] ; then
+        if [ -d "${WORKSPACE_CI_SOURCE_PATH}" ]; then
           # Delete non-hidden files and directories
           rm -rf "${WORKSPACE_CI_SOURCE_PATH}"/*
-          # Delete files and directories with . but
+          
+          # Delete hidden files and directories, except for '.' and '..'
           rm -rf "${WORKSPACE_CI_SOURCE_PATH}"/.[!.]*
+          
           # Delete files and directories starting with .. plus any other character
           find "$WORKSPACE_CI_SOURCE_PATH" -type f -name "..?" -exec rm -f {} \;
           find "$WORKSPACE_CI_SOURCE_PATH" -type d -name "..?" -exec rm -rf {} \;
         fi
+
 
